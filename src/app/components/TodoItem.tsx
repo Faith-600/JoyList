@@ -90,7 +90,7 @@ export const TodoItem = ({ todo, onToggleTodo, onDeleteTodo,onUpdateTodoText }: 
     animate="visible"
     exit="exit"
     ref={setNodeRef}
-    className="flex items-center p-2 bg-card rounded-lg shadow-sm my-2"
+    className="flex items-center p-2 bg-card rounded-lg shadow-sm my-2  border border-gray-30"
   >
     <div {...attributes} {...listeners} className="p-2 cursor-grab touch-none">
       <GripVertical className="h-5 w-5 text-gray-400" />
@@ -103,8 +103,9 @@ export const TodoItem = ({ todo, onToggleTodo, onDeleteTodo,onUpdateTodoText }: 
       className="h-6 w-6"
     />
 
-    <div className="ml-4 flex-1 flex justify-between items-center min-w-0">
-      <div className="flex flex-col min-w-0"> 
+
+    <div className="ml-4 flex-1 flex justify-between items-center min-w-0 ">
+      <div className="flex flex-col min-w-0 "> 
 
         {isEditing ? (
             <Input
@@ -119,8 +120,9 @@ export const TodoItem = ({ todo, onToggleTodo, onDeleteTodo,onUpdateTodoText }: 
             <label
               htmlFor={`todo-${todo.id}`}
               onDoubleClick={() => setIsEditing(true)} 
-              className={`text-lg cursor-pointer truncate ...`}
-            >
+           className={`text-lg cursor-pointer truncate ${
+            todo.completed ? "line-through text-gray-400" : ""
+          }`}            >
               {todo.text}
             </label>
           )}
