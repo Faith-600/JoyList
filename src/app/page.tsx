@@ -12,6 +12,11 @@ import { ThemeToggle } from "./components/ThemeToggle";
 import { ConfettiWrapper } from "./components/ConfettiWrapper";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Sidebar } from "./components/Sidebar";
+import { type Project} from '@/app/types/index'
+import { KarmaDisplay} from './components/KarmaDisplay'
+import { ThemeSelector } from "./components/ThemeSelector";
+import { themes } from "@/config/themes";
 import {
   DndContext,
   closestCenter,
@@ -35,12 +40,32 @@ const defaultTodos = [
 
 type FilterType = "all" | "today";
 
+const DEFAULT_PROJECT_ID = "inbox";
+
+
 export default function Home() {
-  const [todos, setTodos] = useLocalStorageState<Todo[]>("todos", []);
-  const [initialized, setInitialized] = useState(false);
+   const [projects, setProjects] = useLocalStorageState<Project[]>("projects", [
+    { id: DEFAULT_PROJECT_ID, name: "Inbox" },
+    { id: nanoid(), name: "Groceries 🍎" },
+  ]);
+
+    const [todos, setTodos] = useLocalStorageState<Todo[]>("todos", [
+    { id: nanoid(), text: "Welcome to your new Todo App!", completed: false, projectId: DEFAULT_PROJECT_ID },
+    { id: nanoid(), text: "Add a task to the Groceries project", completed: false, projectId: projects[1]?.id || nanoid() },
+  ]);
+
   const [filter, setFilter] = useState<FilterType>("all");
   const activeTodosCount = todos.filter(t => !t.completed).length;
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(DEFAULT_PROJECT_ID);
+ const [hasMounted, setHasMounted] = useState(false);
+ const [karma, setKarma] = useLocalStorageState<number>("karma", 0);
 
+ const availableThemes = themes.filter(theme => karma >= theme.karmaRequired);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+   
 
    const sensors = useSensors(
     useSensor(PointerSensor),
@@ -72,12 +97,42 @@ export default function Home() {
     "You're making incredible progress!",
   ];
 
- useEffect(() => {
-  if (todos.length === 0) {
-    setTodos(defaultTodos);
-  }
-  setInitialized(true);
-}, [todos.length, setTodos]);
+
+
+
+  const addProject = (name: string) => {
+    if (!name.trim()) return;
+
+    const newProject: Project = {
+      id: nanoid(),
+      name: name.trim(),
+    };
+
+    setProjects([...projects, newProject]);
+    setSelectedProjectId(newProject.id); 
+    toast.success(`Project "${newProject.name}" created!`); 
+  };
+
+  const updateProjectName = (projectId: string, newName: string) => {
+    if (!newName.trim()) return;
+    setProjects(
+      projects.map((p) => (p.id === projectId ? { ...p, name: newName.trim() } : p))
+    );
+    toast.success("Project renamed!");
+  };
+
+  const deleteProject = (projectId: string) => {
+    if (projectId === DEFAULT_PROJECT_ID) {
+      toast.error("The Inbox project cannot be deleted.");
+      return;
+    }
+   const projectToDelete = projects.find(p => p.id === projectId);
+    if (!projectToDelete) return;
+   setProjects(projects.filter((p) => p.id !== projectId));
+    setTodos(todos.filter((t) => t.projectId !== projectId));
+    setSelectedProjectId(DEFAULT_PROJECT_ID);
+    toast.success(`Project "${projectToDelete.name}" deleted.`);
+  };
 
   const addTodo = (text: string,dueDate?: Date,imageDataUrl?: string) => {
     const newTodo: Todo = {
@@ -86,23 +141,33 @@ export default function Home() {
       completed: false,
     dueDate: dueDate ? format(dueDate, 'yyyy-MM-dd') : undefined,
       imageUrl: imageDataUrl,
+        projectId: selectedProjectId, 
     };
     setTodos([...todos, newTodo]);
   };
 
 
-  const toggleTodo = (id: string) => {
-     const todoToToggle = todos.find((todo) => todo.id === id);
-
+ const toggleTodo = (id: string) => {
+    const todoToToggle = todos.find((todo) => todo.id === id);
     if (todoToToggle && !todoToToggle.completed) {
-      const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
-      toast("✅ Well Done!" + randomMessage);
+      const pointsEarned = 10; 
+      const newKarma = karma + pointsEarned;
+      
+      setKarma(newKarma); 
+
+      const currentLevel = Math.floor(karma / 100);
+      const newLevel = Math.floor(newKarma / 100);
+
+      if (newLevel > currentLevel) {
+        toast.success(`🎉 LEVEL UP! You've reached Level ${newLevel}!`);
+      }
+
+       const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
+      toast("✅ Well Done! " + randomMessage, {
+        description: `+${pointsEarned} Karma`,
+      });
     }
-    setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-    );
+    setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)));
   };
 
 const deleteTodo = (id: string) => {
@@ -122,34 +187,49 @@ const deleteTodo = (id: string) => {
   return dateString === today;
 }
 
-  const filteredTodos = todos.filter(todo => {
-    if (filter === 'today') {
-      return todo.dueDate && isToday(todo.dueDate);
-    }
-    return true; 
+ const filteredTodos = todos.filter(todo => {
+    if (todo.projectId !== selectedProjectId) return false;
+    if (filter === 'today') return todo.dueDate && isToday(todo.dueDate);
+    return true;
   });
 
-   console.log("Data being sent to TodoList:", filteredTodos);
-
-  if (!initialized) return null; 
+  
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 sm:p-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-       <ConfettiWrapper activeTodosCount={activeTodosCount} />
-       <div className="absolute top-4 right-4">
-    <ThemeToggle />
-  </div>
-  <div className="w-full max-w-2xl"></div>
-      <div className="w-full max-w-2xl ">
-        <div className="text-center">
-          <h1 className="text-4xl sm:text-6xl font-bold text-gray-800 dark:text-white">
-            JoyList
-          </h1>
-          <p className="mt-2 text-lg text-pink-400 dark:text-pink-300 font-semibold">
+     <div className="flex flex-col md:flex-row h-screen bg-background transition-colors duration-300">
+      <div className="p-4 w-full md:w-72">
+        <Sidebar
+          projects={projects}
+          selectedProjectId={selectedProjectId}
+          onSelectProject={setSelectedProjectId}
+           onAddProject={addProject} 
+            onUpdateProject={updateProjectName}
+            onDeleteProject={deleteProject}
+        />
+      </div>
+
+      {/* --- Main Content Area --- */}
+      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        <div className="w-full max-w-3xl mx-auto">
+          <div className="absolute top-4 right-4 flex items-center gap-2">
+             <ThemeSelector
+              availableThemes={availableThemes}
+              allThemes={themes}
+              currentKarma={karma}
+            />
+            <ThemeToggle />
+          </div>
+          <ConfettiWrapper activeTodosCount={activeTodosCount} />
+ <div className="text-center mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-800 dark:text-white">
+              {projects.find(p => p.id === selectedProjectId)?.name || "Project"}
+            </h1>
+            <p className="mt-2 text-lg text-pink-400 dark:text-pink-300 font-semibold">
             Let&apos;s get things done! 💖
              </p>
         </div>
-          {/* <UserButton/> */}
+          <KarmaDisplay score={karma} />
+
         <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">Add a Task:</h2>
           <TodoInput onAddTodo={addTodo} />
@@ -180,5 +260,6 @@ const deleteTodo = (id: string) => {
       </div>
 
     </main>
+    </div>
   );
 }

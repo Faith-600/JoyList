@@ -90,7 +90,7 @@ export const TodoItem = ({ todo, onToggleTodo, onDeleteTodo,onUpdateTodoText }: 
     animate="visible"
     exit="exit"
     ref={setNodeRef}
-    className="flex items-center p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm my-2"
+    className="flex items-center p-2 bg-card rounded-lg shadow-sm my-2"
   >
     <div {...attributes} {...listeners} className="p-2 cursor-grab touch-none">
       <GripVertical className="h-5 w-5 text-gray-400" />

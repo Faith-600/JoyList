@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "./components/Themeprovide";
+import { themes } from "@/config/themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,6 +18,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "JoyList",
   description: "A fun todo app!",
+  icons: {
+    icon: "/favicon.jpeg",
+  },
 };
 
 export default function RootLayout({
@@ -31,8 +35,8 @@ export default function RootLayout({
          <ThemeProvider
           attribute="class"
           defaultTheme="system"
+          themes={themes.map(t => t.id)}
           enableSystem
-          disableTransitionOnChange
         > 
         {children}
           <Toaster position="top-right" richColors />
