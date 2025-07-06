@@ -1,103 +1,182 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { nanoid } from "nanoid";
+import { type Todo } from "@/app/types/index";
+import { TodoList } from "@/app/components/TodoList";
+import { TodoInput } from "@/app/components/TodoInput";
+import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+// import { UserButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button"; 
+import { ThemeToggle } from "./components/ThemeToggle";
+import { ConfettiWrapper } from "./components/ConfettiWrapper";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+
+
+const defaultTodos = [
+  { id: nanoid(), text: "Learn Next.js", completed: true },
+  { id: nanoid(), text: "Build a cute todo app ✨", completed: false },
+  { id: nanoid(), text: "Take over the world", completed: false },
+];
+
+type FilterType = "all" | "today";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [todos, setTodos] = useLocalStorageState<Todo[]>("todos", []);
+  const [initialized, setInitialized] = useState(false);
+  const [filter, setFilter] = useState<FilterType>("all");
+  const activeTodosCount = todos.filter(t => !t.completed).length;
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+
+   const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+    function handleDragEnd(event: any) {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setTodos((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }
+
+  const funMessages = [
+    "Nice one! You're on fire! 🔥",
+    "Great job! You deserve a chilled coke. 🥤",
+    "That's another one down! Keep it up.",
+    "Boom! Task completed. ✨",
+    "You're making incredible progress!",
+  ];
+
+  useEffect(() => {
+    if (todos.length === 0) {
+      setTodos(defaultTodos);
+    }
+    setInitialized(true);
+  }, []);
+
+  const addTodo = (text: string,dueDate?: Date,imageDataUrl?: string) => {
+    const newTodo: Todo = {
+      id: nanoid(),
+      text,
+      completed: false,
+    dueDate: dueDate ? format(dueDate, 'yyyy-MM-dd') : undefined,
+      imageUrl: imageDataUrl,
+    };
+    setTodos([...todos, newTodo]);
+  };
+
+
+  const toggleTodo = (id: string) => {
+     const todoToToggle = todos.find((todo) => todo.id === id);
+
+    if (todoToToggle && !todoToToggle.completed) {
+      const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
+      toast("✅ Well Done!" + randomMessage);
+    }
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, completed: !todo.completed } : todo
+      )
+    );
+  };
+
+const deleteTodo = (id: string) => {
+    setTodos(todos.filter((todo) => todo.id !== id));
+  };
+
+   const updateTodoText = (id: string, newText: string) => {
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, text: newText } : todo
+      )
+    );
+  };
+
+   const isToday = (dateString: string) => {
+  const today = format(new Date(), 'yyyy-MM-dd');
+  return dateString === today;
+}
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'today') {
+      return todo.dueDate && isToday(todo.dueDate);
+    }
+    return true; 
+  });
+
+   console.log("Data being sent to TodoList:", filteredTodos);
+
+  if (!initialized) return null; 
+
+  return (
+    <main className="flex min-h-screen flex-col items-center p-8 sm:p-24 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+       <ConfettiWrapper activeTodosCount={activeTodosCount} />
+       <div className="absolute top-4 right-4">
+    <ThemeToggle />
+  </div>
+  <div className="w-full max-w-2xl"></div>
+      <div className="w-full max-w-2xl ">
+        <div className="text-center">
+          <h1 className="text-4xl sm:text-6xl font-bold text-gray-800 dark:text-white">
+            JoyList
+          </h1>
+          <p className="mt-2 text-lg text-pink-400 dark:text-pink-300 font-semibold">
+            Let's get things done! 💖
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {/* <UserButton/> */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">Add a Task:</h2>
+          <TodoInput onAddTodo={addTodo} />
+
+           <div className="mt-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">
+              {filter === 'today' ? "Today's Tasks" : "Your List"}
+            </h2>
+            <div className="flex gap-2">
+              <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
+              <Button variant={filter === 'today' ? 'default' : 'outline'} onClick={() => setFilter('today')}>Today</Button>
+            </div>
+          </div>
+           
+          {filter === 'all' ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <TodoList todos={filteredTodos} onToggleTodo={toggleTodo} onDeleteTodo={deleteTodo} onUpdateTodoText={updateTodoText} /> 
+            </DndContext>
+          ) : (
+            <TodoList todos={filteredTodos} onToggleTodo={toggleTodo} onDeleteTodo={deleteTodo}  onUpdateTodoText={updateTodoText} />
+          )}
+
+        </div>
+      </div>
+
+    </main>
   );
 }
