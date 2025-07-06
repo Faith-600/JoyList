@@ -32,11 +32,11 @@ import {
 } from '@dnd-kit/sortable';
 
 
-const defaultTodos = [
-  { id: nanoid(), text: "Learn Next.js", completed: true },
-  { id: nanoid(), text: "Build a cute todo app ✨", completed: false },
-  { id: nanoid(), text: "Take over the world", completed: false },
-];
+// const defaultTodos = [
+//   { id: nanoid(), text: "Learn Next.js", completed: true },
+//   { id: nanoid(), text: "Build a cute todo app ✨", completed: false },
+//   { id: nanoid(), text: "Take over the world", completed: false },
+// ];
 
 type FilterType = "all" | "today";
 
@@ -57,14 +57,14 @@ export default function Home() {
   const [filter, setFilter] = useState<FilterType>("all");
   const activeTodosCount = todos.filter(t => !t.completed).length;
   const [selectedProjectId, setSelectedProjectId] = useState<string>(DEFAULT_PROJECT_ID);
- const [hasMounted, setHasMounted] = useState(false);
+//  const [hasMounted, setHasMounted] = useState(false);
  const [karma, setKarma] = useLocalStorageState<number>("karma", 0);
 
  const availableThemes = themes.filter(theme => karma >= theme.karmaRequired);
 
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
+  // useEffect(() => {
+  //   setHasMounted(true);
+  // }, []);
    
 
    const sensors = useSensors(

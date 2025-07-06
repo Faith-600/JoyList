@@ -119,7 +119,7 @@ export const Sidebar = ({ projects, selectedProjectId, onSelectProject, onAddPro
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete the "{project.name}" project and all of its tasks. This action cannot be undone.
+                            This will permanently delete the &quot;{project.name}&quot; project and all of its tasks. This action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
