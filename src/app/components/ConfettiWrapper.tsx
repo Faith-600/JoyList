@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import ReactConfetti from 'react-confetti';
-import { type Todo } from "@/app/types/index";
 import { useWindowSize } from '@react-hook/window-size';
 
 interface ConfettiWrapperProps {

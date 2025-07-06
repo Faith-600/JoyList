@@ -19,10 +19,10 @@ import {
   KeyboardSensor,
   useSensor,
   useSensors,
+  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
-  SortableContext,
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 
@@ -49,8 +49,10 @@ export default function Home() {
     })
   );
 
-    function handleDragEnd(event: any) {
+    function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
+
+    if (!over) return;
 
     if (active.id !== over.id) {
       setTodos((items) => {
@@ -70,12 +72,12 @@ export default function Home() {
     "You're making incredible progress!",
   ];
 
-  useEffect(() => {
-    if (todos.length === 0) {
-      setTodos(defaultTodos);
-    }
-    setInitialized(true);
-  }, []);
+ useEffect(() => {
+  if (todos.length === 0) {
+    setTodos(defaultTodos);
+  }
+  setInitialized(true);
+}, [todos.length, setTodos]);
 
   const addTodo = (text: string,dueDate?: Date,imageDataUrl?: string) => {
     const newTodo: Todo = {
@@ -144,8 +146,8 @@ const deleteTodo = (id: string) => {
             JoyList
           </h1>
           <p className="mt-2 text-lg text-pink-400 dark:text-pink-300 font-semibold">
-            Let's get things done! 💖
-          </p>
+            Let&apos;s get things done! 💖
+             </p>
         </div>
           {/* <UserButton/> */}
         <div className="mt-12">
