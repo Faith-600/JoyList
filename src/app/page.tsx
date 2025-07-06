@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { nanoid } from "nanoid";
 import { type Todo } from "@/app/types/index";
 import { TodoList } from "@/app/components/TodoList";
