@@ -209,7 +209,7 @@ const deleteTodo = (id: string) => {
       </div>
 
       {/* --- Main Content Area --- */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+      <main className="flex-1 p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-3xl mx-auto">
           <div className="absolute top-4 right-4 flex items-center gap-2">
              <ThemeSelector
