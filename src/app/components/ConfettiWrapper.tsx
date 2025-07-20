@@ -1,4 +1,3 @@
-// src/components/ConfettiWrapper.tsx
 "use client";
 
 import { useState, useEffect } from 'react';
