@@ -287,13 +287,36 @@ const calendarEvents = useMemo(() => {
           <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">Add a Task:</h2>
           <TodoInput onAddTodo={addTodo} />
 
-           <div className="mt-8 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">
- {view === 'list' ? (filter === 'today' ? "Today's Tasks" : "Your List") : "Calendar View"}            </h2>
-            <div className="flex gap-2">
-      <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('list')}>List</Button>
-      <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('calendar')}>Calendar</Button>
+          <div className="mt-8 flex items-center justify-between">
+    <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">
+        {view === 'list' ? (filter === 'today' ? "Today's Tasks" : "Your List") : "Calendar View"}
+    </h2>
+
+    <div className="flex items-center gap-4">
+        
+        {view === 'list' && (
+            <div className="flex gap-1 rounded-lg bg-muted p-1">
+                <Button variant={filter === 'all' ? 'secondary' : 'ghost'} size="sm" onClick={() => setFilter('all')}>
+                    All
+                </Button>
+                <Button variant={filter === 'today' ? 'secondary' : 'ghost'} size="sm" onClick={() => setFilter('today')}>
+                    Today
+                </Button>
+            </div>
+        )}
+
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
+            <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('list')}>
+                List
+            </Button>
+            <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('calendar')}>
+                Calendar
+            </Button>
+        </div>
+
     </div>
+
+
           </div>
            
          {view === 'list' ? (
