@@ -12,5 +12,6 @@ export type Todo = {
    dueDate?: string;
    imageUrl?: string;
     projectId: string;
+    karmaAwarded?: boolean; 
 };
 

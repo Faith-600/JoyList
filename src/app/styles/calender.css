@@ -1,0 +1,32 @@
+@import '@fullcalendar/core/main.css';
+@import '@fullcalendar/daygrid/main.css';
+
+.fc {
+  --fc-border-color: hsl(var(--border));
+  --fc-today-bg-color: hsla(var(--primary) / 0.1);
+  --fc-button-bg-color: hsl(var(--primary));
+  --fc-button-text-color: hsl(var(--primary-foreground));
+  --fc-button-border-color: hsl(var(--primary));
+  --fc-button-hover-bg-color: hsl(var(--primary) / 0.9);
+  --fc-button-hover-border-color: hsl(var(--primary) / 0.9);
+  --fc-button-active-bg-color: hsl(var(--primary) / 0.8);
+  --fc-button-active-border-color: hsl(var(--primary) / 0.8);
+  --fc-event-bg-color: hsl(var(--primary));
+  --fc-event-border-color: hsl(var(--primary));
+  --fc-event-text-color: hsl(var(--primary-foreground));
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number {
+  /* color: hsl(var(--foreground)); */
+    color: #333;
+  text-decoration: none;
+}
+
+.fc .fc-day-other .fc-daygrid-day-number {
+  color: hsl(var(--muted-foreground));
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: hsl(222.2, 47.4%, 11.2%) !important;
+}

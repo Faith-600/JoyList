@@ -1,6 +1,6 @@
 "use client";
 
-import {  useState } from "react";
+import {  useState,useMemo } from "react";
 import { nanoid } from "nanoid";
 import { type Todo } from "@/app/types/index";
 import { TodoList } from "@/app/components/TodoList";
@@ -11,12 +11,14 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { ConfettiWrapper } from "./components/ConfettiWrapper";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format,subDays } from "date-fns";
 import { Sidebar } from "./components/Sidebar";
 import { type Project} from '@/app/types/index'
 import { KarmaDisplay} from './components/KarmaDisplay'
 import { ThemeSelector } from "./components/ThemeSelector";
 import { themes } from "@/config/themes";
+import { StreakDisplay } from "./components/StreakDisplay";
+import { TodoCalendar } from "./components/TodoCalender";
 import {
   DndContext,
   closestCenter,
@@ -59,6 +61,10 @@ export default function Home() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>(DEFAULT_PROJECT_ID);
 //  const [hasMounted, setHasMounted] = useState(false);
  const [karma, setKarma] = useLocalStorageState<number>("karma", 0);
+ const [streakCount, setStreakCount] = useLocalStorageState<number>("streak", 0);
+const [lastCompletedDate, setLastCompletedDate] = useLocalStorageState<string | null>("lastCompletedDate", null);
+ const [view, setView] = useState<'list' | 'calendar'>('list');
+
 
  const availableThemes = themes.filter(theme => karma >= theme.karmaRequired);
 
@@ -142,33 +148,63 @@ export default function Home() {
     dueDate: dueDate ? format(dueDate, 'yyyy-MM-dd') : undefined,
       imageUrl: imageDataUrl,
         projectId: selectedProjectId, 
+          karmaAwarded: false,
     };
     setTodos([...todos, newTodo]);
   };
 
+const toggleTodo = (id: string) => {
+  const todoToToggle = todos.find((todo) => todo.id === id);
+  if (!todoToToggle) return; 
 
- const toggleTodo = (id: string) => {
-    const todoToToggle = todos.find((todo) => todo.id === id);
-    if (todoToToggle && !todoToToggle.completed) {
-      const pointsEarned = 10; 
-      const newKarma = karma + pointsEarned;
-      
-      setKarma(newKarma); 
+  if (!todoToToggle.completed && !todoToToggle.karmaAwarded) {
+    const pointsEarned = 10;
+    const newKarma = karma + pointsEarned;
+    setKarma(newKarma);
 
-      const currentLevel = Math.floor(karma / 100);
-      const newLevel = Math.floor(newKarma / 100);
-
-      if (newLevel > currentLevel) {
-        toast.success(`🎉 LEVEL UP! You've reached Level ${newLevel}!`);
-      }
-
-       const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
-      toast("✅ Well Done! " + randomMessage, {
-        description: `+${pointsEarned} Karma`,
-      });
+    const currentLevel = Math.floor(karma / 100);
+    const newLevel = Math.floor(newKarma / 100);
+    if (newLevel > currentLevel) {
+      toast.success(`🎉 LEVEL UP! You've reached Level ${newLevel}!`);
     }
-    setTodos(todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo)));
-  };
+    const randomMessage = funMessages[Math.floor(Math.random() * funMessages.length)];
+    toast("✅ Well Done! " + randomMessage, {
+      description: `+${pointsEarned} Karma`,
+    });
+  }
+
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const yesterday = format(subDays(new Date(), 1), 'yyyy-MM-dd');
+
+    if (lastCompletedDate === yesterday) {
+      const newStreak = streakCount + 1;
+      setStreakCount(newStreak);
+      toast.info(`🔥 Streak extended to ${newStreak} days!`);
+    } else if (lastCompletedDate !== today) {
+      setStreakCount(1);
+      toast.info(`🔥 A new streak has begun!`);
+    }
+    setLastCompletedDate(today);
+
+
+  setTodos((currentTodos) =>
+    currentTodos.map((todo) => {
+      if (todo.id === id) {
+        const updatedTodo = {
+          ...todo,
+          completed: !todo.completed,
+        };
+
+        if (updatedTodo.completed) {
+          updatedTodo.karmaAwarded = true;
+        }
+        
+        return updatedTodo;
+      }
+      return todo;
+    })
+  );
+};
 
 const deleteTodo = (id: string) => {
     setTodos(todos.filter((todo) => todo.id !== id));
@@ -193,7 +229,23 @@ const deleteTodo = (id: string) => {
     return true;
   });
 
+
+const calendarEvents = useMemo(() => {
+  return todos
+    .filter(todo => todo.projectId === selectedProjectId && todo.dueDate) 
+    .map(todo => ({
+      id: todo.id,
+      title: todo.text,
+      date: todo.dueDate,
+      allDay: true, 
+      backgroundColor: todo.completed ? '#16a34a' : 'hsl(var(--primary))',
+      borderColor: todo.completed ? '#16a34a' : 'hsl(var(--primary))',
+    }));
+}, [todos, selectedProjectId]);
   
+
+
+
 
   return (
      <div className="flex flex-col md:flex-row h-screen bg-background transition-colors duration-300">
@@ -228,33 +280,37 @@ const deleteTodo = (id: string) => {
             Let&apos;s get things done! 💖
              </p>
         </div>
-          <KarmaDisplay score={karma} />
+     <KarmaDisplay score={karma} />
+      <StreakDisplay count={streakCount} />
 
-        <div className="mt-12">
+        <div className="mt-12 p-4">
           <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">Add a Task:</h2>
           <TodoInput onAddTodo={addTodo} />
 
            <div className="mt-8 flex items-center justify-between">
             <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">
-              {filter === 'today' ? "Today's Tasks" : "Your List"}
-            </h2>
+ {view === 'list' ? (filter === 'today' ? "Today's Tasks" : "Your List") : "Calendar View"}            </h2>
             <div className="flex gap-2">
-              <Button variant={filter === 'all' ? 'default' : 'outline'} onClick={() => setFilter('all')}>All</Button>
-              <Button variant={filter === 'today' ? 'default' : 'outline'} onClick={() => setFilter('today')}>Today</Button>
-            </div>
+      <Button variant={view === 'list' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('list')}>List</Button>
+      <Button variant={view === 'calendar' ? 'secondary' : 'ghost'} size="sm" onClick={() => setView('calendar')}>Calendar</Button>
+    </div>
           </div>
            
-          {filter === 'all' ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <TodoList todos={filteredTodos} onToggleTodo={toggleTodo} onDeleteTodo={deleteTodo} onUpdateTodoText={updateTodoText} /> 
-            </DndContext>
-          ) : (
-            <TodoList todos={filteredTodos} onToggleTodo={toggleTodo} onDeleteTodo={deleteTodo}  onUpdateTodoText={updateTodoText} />
-          )}
+         {view === 'list' ? (
+  filter === 'all' ? (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <TodoList todos={filteredTodos} onToggleTodo={toggleTodo} onDeleteTodo={deleteTodo} onUpdateTodoText={updateTodoText} /> 
+    </DndContext>
+  ) : (
+    <TodoList todos={filteredTodos} onToggleTodo={toggleTodo} onDeleteTodo={deleteTodo} onUpdateTodoText={updateTodoText} />
+  )
+) : (
+  <TodoCalendar events={calendarEvents} />
+)}
 
         </div>
       </div>

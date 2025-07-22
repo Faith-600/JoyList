@@ -74,7 +74,7 @@
     --background: hsl(222.2 84% 4.9%);
     --foreground: hsl(210 40% 98%);
     --card: hsl(222.2 84% 4.9%);
-    --card-foreground: hsl(210 40% 98%);
+    --card-foreground: hsl(210, 6%, 60%);
     --popover: hsl(222.2 84% 4.9%);
     --popover-foreground: hsl(210 40% 98%);
     --primary: hsl(346.8 77.2% 49.8%);
@@ -102,8 +102,8 @@
 
   .forest {
     --background: hsl(120, 9%, 48%);
-    --foreground: hsl(120, 30%, 15%);
-    --card: hsl(0, 0%, 100%);
+    /* --foreground: hsl(120, 30%, 15%); */
+    --card: hsla(0, 0%, 100%, 0.586);
     --card-foreground: hsl(120, 30%, 15%);
     --primary: hsl(120, 50%, 40%);
   }
@@ -133,35 +133,36 @@
 }
 
 .bubblegum {
-  --background: 340 100% 98%;         
-  --foreground: 340 30% 15%;          
+  --background: hsl(330, 100%, 96%);         /* soft light pink */
+  --foreground: hsl(330, 40%, 20%);          /* dark mauve text */
 
-  --card: 340 100% 97%;
-  --card-foreground: 340 30% 15%;
+  --card: hsl(330, 100%, 95%);
+  --card-foreground: hsl(330, 40%, 20%);
 
-  --popover: 340 100% 98%;
-  --popover-foreground: 340 30% 15%;
+  --popover: hsl(330, 100%, 96%);
+  --popover-foreground: hsl(330, 40%, 20%);
 
-  --primary: 340 82% 70%;             
-  --primary-foreground: 0 0% 100%;   
+  --primary: hsl(330, 70%, 60%);             /* vibrant pink */
+  --primary-foreground: hsl(0, 0%, 100%);     /* white text on primary */
 
-  --secondary: 10 100% 92%;           
-  --secondary-foreground: 10 30% 15%;
+  --secondary: hsl(30, 100%, 90%);           /* soft peach */
+  --secondary-foreground: hsl(30, 50%, 20%);
 
-  --muted: 340 50% 94%;               
-  --muted-foreground: 340 20% 35%;
+  --muted: hsl(330, 50%, 90%);               /* light rose */
+  --muted-foreground: hsl(330, 30%, 35%);
 
-  --accent: 320 100% 85%;             
-  --accent-foreground: 320 20% 20%;
+  --accent: hsl(300, 100%, 85%);             /* lilac-pink */
+  --accent-foreground: hsl(300, 30%, 25%);
 
-  --destructive: 0 85% 60%;           
-  --destructive-foreground: 0 0% 100%;
+  --destructive: hsl(0, 75%, 55%);           /* softer red */
+  --destructive-foreground: hsl(0, 0%, 100%); /* white text */
 
-  --border: 340 40% 85%;             
-  --input: 340 40% 85%;
-  --ring: 340 82% 70%;
+  --border: hsl(330, 40%, 80%);
+  --input: hsl(330, 40%, 85%);
+  --ring: hsl(330, 70%, 60%);
   --radius: 0.5rem;
 }
+
 
 .minty {
   --background: 165 60% 98%;          
