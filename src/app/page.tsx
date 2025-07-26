@@ -287,7 +287,7 @@ const calendarEvents = useMemo(() => {
           <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">Add a Task:</h2>
           <TodoInput onAddTodo={addTodo} />
 
-          <div className="mt-8 flex items-center justify-between">
+<div className="mt-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
     <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-200">
         {view === 'list' ? (filter === 'today' ? "Today's Tasks" : "Your List") : "Calendar View"}
     </h2>
