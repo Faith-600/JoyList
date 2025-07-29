@@ -273,7 +273,7 @@ const calendarEvents = useMemo(() => {
           </div>
           <ConfettiWrapper activeTodosCount={activeTodosCount} />
  <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-800 dark:text-white">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold">
               {projects.find(p => p.id === selectedProjectId)?.name || "Project"}
             </h1>
             <p className="mt-2 text-lg text-pink-400 dark:text-pink-300 font-semibold">
